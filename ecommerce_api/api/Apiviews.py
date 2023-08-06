@@ -1,4 +1,4 @@
-from django.shortcuts import render
+
 from rest_framework.permissions import  AllowAny
 from rest_framework import generics
 from .serializer import RegisterSerializer, ProductSerializer
@@ -16,12 +16,9 @@ class registerUser(generics.CreateAPIView):
     def create(self, request, *args, **kwargs):
         try:
             serializer = self.get_serializer(data=request.data)
-            
             serializer.is_valid(raise_exception=True)
-            print(serializer.errors)
             self.perform_create(serializer)
-            print(serializer.data)
-            # Construct the desired response format
+            
             response_data = {
                 "status": "200",
                 "message": "Ok",
@@ -32,11 +29,11 @@ class registerUser(generics.CreateAPIView):
 
             return Response(response_data)
         except Exception as e:
+
             print("error",str(e))
             try:
                 error_message = dict((e.__dict__)['detail'])
                 error_message_keys = dict((e.__dict__)['detail']).keys()
-                
                 print("error_message_keys", error_message_keys)
                 lst = []
                 for key in error_message_keys:
@@ -48,9 +45,7 @@ class registerUser(generics.CreateAPIView):
                 print(" ".join(lst))
                 status_code = getattr(e, 'status_code') 
                 error_message_text_format = " ".join(lst)
-                
 
-                
                 response_data = {
                     "status": status_code,  # Or appropriate error status code
                     "message": "Error",
@@ -61,6 +56,7 @@ class registerUser(generics.CreateAPIView):
 
                 return Response(response_data)
             except Exception as error:
+
                 return Response({"error":str(error)})
             
 class listUsers(generics.ListAPIView):
@@ -69,15 +65,18 @@ class listUsers(generics.ListAPIView):
     serializer_class = RegisterSerializer
 
     def get_queryset(self, *args, **kwargs):
+
         return CustomUser.objects.filter(groups__name="user")
         # return CustomUser.objects.all()
 
     def list(self, *args, **kwargs):
+
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
         data = serializer.data
         for item in data:
             item.pop('token', None)
+
         response_data = {
             "status": 200,
             "error_code": "",
@@ -95,6 +94,7 @@ class rudUser(generics.RetrieveUpdateDestroyAPIView):
     queryset = CustomUser.objects.all()
 
     def retrieve(self, *args, **kwargs):
+
         instance = self.get_object()
         serializer = self.get_serializer(instance)
         data = serializer.data
@@ -110,7 +110,9 @@ class rudUser(generics.RetrieveUpdateDestroyAPIView):
         return Response(response_data)
     
     def partial_update(self, request, *args, **kwargs):
+
         try:
+
             instance = self.get_object()
             serializer = self.get_serializer(instance, data=request.data, partial=True)
             serializer.is_valid(raise_exception=True)
@@ -126,7 +128,9 @@ class rudUser(generics.RetrieveUpdateDestroyAPIView):
                 "data": data,
             }
             return Response(response_data)
+        
         except Exception as e:
+
             try:
                 error_message = dict((e.__dict__)['detail'])
                 error_message_keys = dict((e.__dict__)['detail']).keys()
@@ -142,9 +146,7 @@ class rudUser(generics.RetrieveUpdateDestroyAPIView):
                 print(" ".join(lst))
                 status_code = getattr(e, 'status_code') 
                 error_message_text_format = " ".join(lst)
-                
 
-                
                 response_data = {
                     "status": status_code,  
                     "message": "Error",
@@ -154,7 +156,9 @@ class rudUser(generics.RetrieveUpdateDestroyAPIView):
                 }
 
                 return Response(response_data)
+            
             except Exception as error:
+
                 return Response({"error":str(error)})
 
     
@@ -169,31 +173,28 @@ class rudUser(generics.RetrieveUpdateDestroyAPIView):
             "message": "User Delete successfully..",
             
         }
+
         return Response(response_data)
     
 
 # product Related
 
 class ProductCreateView(generics.CreateAPIView):
-    # queryset = Product.objects.all()
+    
     serializer_class = ProductSerializer
 
     def create(self, request, *args, **kwargs):
         try:
        
             serializer = self.get_serializer(data=request.data)
-            
             serializer.is_valid(raise_exception=True)
             print(serializer.errors)
             self.perform_create(serializer)
-            print(serializer.data)
-            # Construct the desired response format
             data = serializer.data
             customer_data = data['customer']
             customer_data.pop('token')
-
-            # Update the modified 'customer' dictionary back into the original 'data' dictionary
             data['customer'] = customer_data
+
             response_data = {
                 "status": "200",
                 "message": "Ok",
@@ -203,13 +204,16 @@ class ProductCreateView(generics.CreateAPIView):
             }
 
             return Response(response_data)
+        
         except Exception as e:
+
             status_code = getattr(e, 'status_code') 
             print("status_code", status_code)
+
             response_data = {
-                    "status": status_code,  # Or appropriate error status code
+                    "status": status_code,  
                     "message": "Error",
-                    "error_code": "",  # Optionally, you can add an error code
+                    "error_code": "",  
                     "error_message": str(e),
                     "data": {},
                 }
@@ -226,20 +230,18 @@ class listProducts(generics.ListAPIView):
         return Product.objects.all()
 
     def list(self, *args, **kwargs):
+
         try:
             queryset = self.get_queryset()
             serializer = self.get_serializer(queryset, many=True)
             data = serializer.data
-            
-                
             for item in data:
                
                 print(item['customer'])
                 item['customer'].pop('token', None)
                 
-                
-            
             response_data = {
+
                 "status": 200,
                 "error_code": "",
                 "error_message": "",
@@ -253,7 +255,9 @@ class listProducts(generics.ListAPIView):
 
             status_code = getattr(e, 'status_code') 
             print("status_code", status_code)
+
             response_data = {
+
                     "status": status_code,  
                     "message": "Error",
                     "error_code": "",  
@@ -265,21 +269,21 @@ class listProducts(generics.ListAPIView):
         
         
 class rudProduct(generics.RetrieveUpdateDestroyAPIView):  
-    # authentication_classes = []
+  
     permission_classes = (AllowAny,)
     serializer_class = ProductSerializer
     queryset = Product.objects.all()
 
     def retrieve(self, *args, **kwargs):
+
         instance = self.get_object()
         serializer = self.get_serializer(instance)
         data = serializer.data
         customer_data = data['customer']
         customer_data.pop('token')
-        
-
         data['customer'] = customer_data
         response_data = {
+
             "status": 200,
             "error_code": "",
             "error_message": "",
@@ -292,38 +296,39 @@ class rudProduct(generics.RetrieveUpdateDestroyAPIView):
     def partial_update(self, request, *args, **kwargs):
 
         try:
+
             instance = self.get_object()
             serializer = self.get_serializer(instance, data=request.data, partial=True)
             serializer.is_valid(raise_exception=True)
-           
             date_is =(datetime.now().date() - timedelta(days=60))
             if instance.registration_date < date_is:
                 print("pass",instance.is_active)
                 instance.is_active =False
                 
-
             serializer.save()  
             data = serializer.data
-           
-            
             customer_data = data['customer']
             customer_data.pop('token')
             data['customer'] = customer_data
+
             response_data = {
+
                 "status": 200,
                 "error_code": "",
                 "error_message": "",
                 "message": "Ok",
                 "data": data,
             }
+
             return Response(response_data)
         
         except Exception as e:
+
             print("error",e)
             try:
+
                 error_message = dict((e.__dict__)['detail'])
                 error_message_keys = dict((e.__dict__)['detail']).keys()
-                
                 print("error_message_keys", error_message_keys)
                 lst = []
                 for key in error_message_keys:
@@ -335,10 +340,9 @@ class rudProduct(generics.RetrieveUpdateDestroyAPIView):
                 print(" ".join(lst))
                 status_code = getattr(e, 'status_code') 
                 error_message_text_format = " ".join(lst)
-                
 
-                
                 response_data = {
+
                     "status": status_code,  
                     "message": "Error",
                     "error_code": "", 
@@ -347,7 +351,9 @@ class rudProduct(generics.RetrieveUpdateDestroyAPIView):
                 }
 
                 return Response(response_data)
+            
             except Exception as error:
+                
                 return Response({"error":str(error)})
 
     

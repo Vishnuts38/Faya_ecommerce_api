@@ -1,4 +1,4 @@
-from rest_framework.views import Response  
+
 
 from rest_framework.authtoken.models import Token
 
@@ -39,7 +39,6 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def get_token(self, object):
 
-        # print("object",self.password)
         user = CustomUser.objects.get(username=object.username)
         token, created = Token.objects.get_or_create(user=user)
         return token.key
@@ -50,22 +49,24 @@ class RegisterSerializer(serializers.ModelSerializer):
 class ProductSerializer(serializers.ModelSerializer):
 
     is_active = serializers.SerializerMethodField()
-    
     customer = RegisterSerializer(read_only=True)
     customer_id = serializers.IntegerField()
 
     class Meta:
+
         model = Product
         fields = ["id", "product_name", "description", "price", "registration_date","is_active", "customer_id", "customer", ]
         depth = 1
 
     def create(self,validated_data):
+
         customer_id = validated_data.pop('customer_id')
         customer_obj = CustomUser.objects.get(id=customer_id)
         product = Product.objects.create(customer=customer_obj, **validated_data)
         return product
     
     def get_is_active(self, object):
+        
         product_active = Product.objects.filter(id=object.id)
         for active in product_active:
             product_in_active = active.is_active
