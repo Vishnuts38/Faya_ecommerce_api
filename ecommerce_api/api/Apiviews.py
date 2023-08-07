@@ -365,7 +365,7 @@ class rudProduct(generics.RetrieveUpdateDestroyAPIView):
             "status": 200,
             "error_code": "",
             "error_message": "",
-            "message": "User Delete successfully..",
+            "message": "Product Delete successfully..",
             
         }
         return Response(response_data)
